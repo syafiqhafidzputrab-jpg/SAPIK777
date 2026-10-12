@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Simulasi Slot (Demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#efe7fb; --ink:#2a1740; --muted:#6b5a85; --cab:#ff8fab; --cab-dk:#e5698a;
+  --panel:#fff8f0; --reel:#ffffff; --accent:#ff9f1c; --mint:#1fa896; --bad:#d6336c;
+  --line:#e4d6f5; --card:#ffffff;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --page:#1d1030; --ink:#f6eefe; --muted:#b7a4d3; --cab:#e5698a; --cab-dk:#b94a69;
+    --panel:#2c1a47; --reel:#fff8f0; --line:#43296a; --card:#2c1a47;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#1d1030; --ink:#f6eefe; --muted:#b7a4d3; --cab:#e5698a; --cab-dk:#b94a69;
+  --panel:#2c1a47; --reel:#fff8f0; --line:#43296a; --card:#2c1a47;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font-family:'Nunito',system-ui,sans-serif;font-weight:600;min-height:100vh}
+.wrap{max-width:460px;margin:0 auto;padding:14px 14px 40px}
+.demo{background:var(--ink);color:var(--page);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700;text-align:center;line-height:1.35}
+h1{font-family:'Bagel Fat One',system-ui,sans-serif;font-weight:400;font-size:34px;line-height:1;margin:18px 0 4px;letter-spacing:.5px}
+.sub{color:var(--muted);margin:0 0 14px;font-size:14px}
+
+.bal{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card);border:2px solid var(--line);border-radius:18px;padding:12px 14px}
+.bal small{display:block;color:var(--muted);font-size:12px;font-weight:700}
+.bal b{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums}
+.bal .btns{display:flex;gap:8px}
+button{font:inherit;cursor:pointer;border:0}
+.pill{border-radius:999px;padding:10px 16px;font-weight:800;font-size:14px;color:#fff}
+.pill.dep{background:var(--mint)}
+.pill.wd{background:var(--ink);color:var(--page)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.cab{margin-top:14px;background:var(--cab);border-radius:28px;padding:16px;box-shadow:0 8px 0 var(--cab-dk)}
+.cab .top{display:flex;justify-content:space-between;align-items:center;color:#fff;font-weight:800;font-size:14px;margin-bottom:10px}
+.lamps{display:flex;gap:6px}
+.lamps i{width:12px;height:12px;border-radius:50%;background:#fff;opacity:.55}
+.lamps i.on{background:var(--accent);opacity:1;box-shadow:0 0 8px var(--accent)}
+.reels{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;background:var(--cab-dk);padding:10px;border-radius:20px}
+.reel{background:var(--reel);border-radius:14px;height:112px;display:flex;align-items:center;justify-content:center;font-size:62px;overflow:hidden;position:relative}
+.reel.spin span{animation:blur .12s linear infinite}
+@keyframes blur{0%{transform:translateY(-14px);filter:blur(3px)}100%{transform:translateY(14px);filter:blur(3px)}}
+.reel.win{outline:4px solid var(--accent);outline-offset:-4px}
+.msg{min-height:30px;margin:12px 0 4px;text-align:center;color:#fff;font-weight:800;font-size:17px}
+.msg.win{color:#fff3b0}
+
+.bet{display:flex;gap:6px;margin:6px 0 12px}
+.bet button{flex:1;padding:9px 0;border-radius:12px;background:rgba(255,255,255,.35);color:#fff;font-weight:800;font-size:13px}
+.bet button[aria-pressed="true"]{background:#fff;color:var(--ink)}
+.spinbtn{width:100%;padding:16px;border-radius:18px;background:var(--accent);color:var(--ink);font-family:'Bagel Fat One',system-ui,sans-serif;font-size:26px;letter-spacing:1px;box-shadow:0 5px 0 #c97800}
+.spinbtn:active{transform:translateY(3px);box-shadow:0 2px 0 #c97800}
+.spinbtn:disabled{opacity:.55;cursor:not-allowed}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.stats div{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:8px 6px;text-align:center}
+.stats small{display:block;color:var(--muted);font-size:11px}
+.stats b{font-size:14px;font-variant-numeric:tabular-nums}
+
+h2{font-family:'Bagel Fat One',system-ui,sans-serif;font-weight:400;font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:6px 14px}
+.pay{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:15px}
+.pay:last-child{border:0}
+.note{font-size:12.5px;color:var(--muted);margin:8px 2px 0;line-height:1.45}
+.tx{display:flex;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.tx:last-child{border:0}
+.tx small{color:var(--muted);display:block;font-size:11.5px}
+.tx b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.pos{color:var(--mint)} .neg{color:var(--bad)}
+.empty{padding:14px 0;color:var(--muted);font-size:14px}
+.reset{margin-top:16px;background:none;color:var(--muted);text-decoration:underline;font-size:13px;font-weight:700}
+
+/* modal */
+.ov{position:fixed;inset:0;background:rgba(20,8,35,.6);display:none;align-items:flex-end;justify-content:center;z-index:10}
+.ov.open{display:flex}
+.sheet{background:var(--page);width:100%;max-width:460px;border-radius:24px 24px 0 0;padding:18px 16px calc(22px + env(safe-area-inset-bottom,0px));max-height:92vh;overflow:auto}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--line);border-radius:14px;padding:4px;margin-bottom:14px}
+.tabs button{padding:10px;border-radius:11px;background:none;color:var(--muted);font-weight:800}
+.tabs button[aria-selected="true"]{background:var(--card);color:var(--ink)}
+label{display:block;font-size:13px;font-weight:800;margin:12px 0 6px}
+input,select{width:100%;font:inherit;font-weight:700;padding:12px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chips button{padding:8px 12px;border-radius:999px;background:var(--card);border:2px solid var(--line);color:var(--ink);font-weight:800;font-size:13px}
+.err{color:var(--bad);font-size:13px;font-weight:700;min-height:18px;margin-top:8px}
+.go{width:100%;margin-top:6px;padding:14px;border-radius:14px;font-weight:800;font-size:16px;color:#fff;background:var(--mint)}
+.go.wd{background:var(--ink);color:var(--page)}
+.go:disabled{opacity:.6}
+.close{width:100%;margin-top:8px;padding:10px;background:none;color:var(--muted);font-weight:800}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--page);padding:10px 16px;border-radius:999px;font-weight:800;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;max-width:90%;text-align:center}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){.reel.spin span{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="demo">DEMO PEMBELAJARAN: semua uang di sini virtual, tidak ada transaksi sungguhan.</div>
+  <h1>Slot Buah</h1>
+  <p class="sub">Simulasi mesin slot dengan deposit &amp; withdraw saldo virtual.</p>
+
+  <div class="bal">
+    <div><small>Saldo</small><b id="bal">Rp0</b></div>
+    <div class="btns">
+      <button class="pill dep" id="openDep">Deposit</button>
+      <button class="pill wd" id="openWd">Withdraw</button>
+    </div>
+  </div>
+
+  <div class="cab">
+    <div class="top"><span>Mesin 3 gulungan</span><span class="lamps" id="lamps"><i></i><i></i><i></i><i></i><i></i></span></div>
+    <div class="reels" id="reels">
+      <div class="reel"><span>🍒</span></div>
+      <div class="reel"><span>🍋</span></div>
+      <div class="reel"><span>🍉</span></div>
+    </div>
+    <div class="msg" id="msg">Pilih taruhan lalu tekan putar</div>
+    <div class="bet" id="bet" role="group" aria-label="Taruhan"></div>
+    <button class="spinbtn" id="spin">PUTAR</button>
+  </div>
+
+  <div class="stats">
+    <div><small>Putaran</small><b id="sSpins">0</b></div>
+    <div><small>Total taruhan</small><b id="sBet">0</b></div>
+    <div><small>Total menang</small><b id="sWon">0</b></div>
+    <div><small>RTP sesi</small><b id="sRtp">-</b></div>
+  </div>
+
+  <h2>Tabel hadiah</h2>
+  <div class="card" id="pay"></div>
+  <p class="note">Hadiah = taruhan × pengali. Peluang tiap simbol diatur lewat bobot, dan pengali sengaja dibuat lebih rendah dari peluang aslinya, jadi RTP teoritis sekitar 82%. Artinya dalam jangka panjang pemain pasti merugi. Cek angka RTP sesi di atas dan bandingkan.</p>
+
+  <h2>Riwayat transaksi</h2>
+  <div class="card" id="hist"></div>
+  <button class="reset" id="reset">Reset semua data demo</button>
+</div>
+
+<div class="ov" id="ov" role="dialog" aria-modal="true">
+  <div class="sheet">
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tabDep" aria-selected="true">Deposit</button>
+      <button role="tab" id="tabWd" aria-selected="false">Withdraw</button>
+    </div>
+    <label for="method">Metode (simulasi)</label>
+    <select id="method">
+      <option>Transfer Bank (BCA)</option>
+      <option>Transfer Bank (Mandiri)</option>
+      <option>GoPay</option>
+      <option>OVO</option>
+      <option>DANA</option>
+    </select>
+    <label for="amt" id="amtLabel">Jumlah deposit (Rp)</label>
+    <input id="amt" type="number" inputmode="numeric" min="0" step="1000" placeholder="contoh: 50000">
+    <div class="chips" id="chips"></div>
+    <div class="err" id="err"></div>
+    <button class="go" id="go">Deposit sekarang</button>
+    <button class="close" id="close">Tutup</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  // ---------- konfigurasi ----------
+  var SYMS=[
+    {s:'🍒',w:30,x:5, n:'3 Ceri'},
+    {s:'🍋',w:25,x:8, n:'3 Lemon'},
+    {s:'🍉',w:20,x:12,n:'3 Semangka'},
+    {s:'🔔',w:14,x:20,n:'3 Lonceng'},
+    {s:'⭐',w:8, x:50,n:'3 Bintang'},
+    {s:'7️⃣',w:3, x:100,n:'3 Tujuh'}
+  ];
+  var TWO_CHERRY=2, BETS=[1000,5000,10000,50000], MIN_WD=10000, KEY='slotdemo_v1';
+  var TOTAL_W=SYMS.reduce(function(a,b){return a+b.w},0);
+
+  var state={balance:0,bet:5000,spins:0,wagered:0,won:0,hist:[]};
+  try{var raw=localStorage.getItem(KEY); if(raw){var p=JSON.parse(raw); if(p&&typeof p.balance==='number') state=Object.assign(state,p);}}catch(e){}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+
+  var $=function(id){return document.getElementById(id)};
+  var fmt=function(n){return 'Rp'+Math.round(n).toLocaleString('id-ID')};
+  var busy=false;
+
+  // ---------- UI dasar ----------
+  function toast(t){var el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(function(){el.classList.remove('show')},2200)}
+  function pickSym(){var r=Math.random()*TOTAL_W;for(var i=0;i<SYMS.length;i++){r-=SYMS[i].w;if(r<0)return SYMS[i]}return SYMS[0]}
+  function addHist(type,amount,note){
+    state.hist.unshift({t:Date.now(),type:type,amount:amount,note:note});
+    if(state.hist.length>40)state.hist.length=40;
+  }
+  function render(){
+    $('bal').textContent=fmt(state.balance);
+    $('sSpins').textContent=state.spins;
+    $('sBet').textContent=state.wagered.toLocaleString('id-ID');
+    $('sWon').textContent=state.won.toLocaleString('id-ID');
+    $('sRtp').textContent=state.wagered?Math.round(state.won/state.wagered*100)+'%':'-';
+    var bb=$('bet');bb.innerHTML='';
+    BETS.forEach(function(b){
+      var el=document.createElement('button');
+      el.textContent=(b/1000)+'rb';el.setAttribute('aria-pressed',state.bet===b);
+      el.onclick=function(){if(busy)return;state.bet=b;save();render()};
+      bb.appendChild(el);
+    });
+    $('spin').disabled=busy||state.balance<state.bet;
+    if(!busy&&state.balance<state.bet)$('msg').textContent='Saldo kurang. Silakan deposit dulu.';
+    var h=$('hist');
+    if(!state.hist.length){h.innerHTML='<div class="empty">Belum ada transaksi. Mulai dengan deposit.</div>';}
+    else h.innerHTML=state.hist.slice(0,15).map(function(x){
+      var d=new Date(x.t),tm=d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+      var pos=x.amount>=0;
+      return '<div class="tx"><div>'+x.type+'<small>'+tm+' · '+x.note+'</small></div><b class="'+(pos?'pos':'neg')+'">'+(pos?'+':'-')+fmt(Math.abs(x.amount))+'</b></div>';
+    }).join('');
+  }
+  $('pay').innerHTML=SYMS.slice().reverse().map(function(s){
+    return '<div class="pay"><span>'+s.s+s.s+s.s+' '+s.n.replace('3 ','')+'</span><b>'+s.x+'×</b></div>';
+  }).join('')+'<div class="pay"><span>🍒🍒 Dua ceri (posisi bebas)</span><b>'+TWO_CHERRY+'×</b></div>';
+
+  // ---------- putar ----------
+  function setLamps(on){[].forEach.call($('lamps').children,function(l,i){l.classList.toggle('on',on&&(i%2===0))})}
+  function spin(){
+    if(busy||state.balance<state.bet)return;
+    busy=true;
+    state.balance-=state.bet;state.wagered+=state.bet;state.spins++;
+    var bet=state.bet;
+    var result=[pickSym(),pickSym(),pickSym()];
+    var reels=[].slice.call(document.querySelectorAll('.reel'));
+    reels.forEach(function(r){r.classList.remove('win');r.classList.add('spin')});
+    $('msg').className='msg';$('msg').textContent='Berputar...';
+    $('spin').disabled=true;render();
+    var tick=setInterval(function(){
+      reels.forEach(function(r,i){if(r.classList.contains('spin'))r.firstChild.textContent=SYMS[Math.floor(Math.random()*SYMS.length)].s});
+    },90);
+    reels.forEach(function(r,i){
+      setTimeout(function(){
+        r.classList.remove('spin');r.firstChild.textContent=result[i].s;
+        if(i===2){clearInterval(tick);finish(result,bet,reels)}
+      },700+i*450);
+    });
+  }
+  function finish(res,bet,reels){
+    var mult=0,hit=[];
+    if(res[0]===res[1]&&res[1]===res[2]){mult=res[0].x;hit=[0,1,2];}
+    else{
+      var ch=[];res.forEach(function(r,i){if(r.s==='🍒')ch.push(i)});
+      if(ch.length===2){mult=TWO_CHERRY;hit=ch;}
+    }
+    var win=bet*mult;
+    if(win>0){
+      state.balance+=win;state.won+=win;
+      hit.forEach(function(i){reels[i].classList.add('win')});
+      $('msg').className='msg win';$('msg').textContent='Menang '+fmt(win)+' ('+mult+'×)';
+      addHist('Kemenangan',win,mult+'× dari taruhan '+fmt(bet));
+      setLamps(true);setTimeout(function(){setLamps(false)},1600);
+    }else{
+      $('msg').textContent='Belum beruntung. Coba lagi.';
+      addHist('Taruhan',-bet,'Kalah');
+    }
+    busy=false;save();render();
+  }
+  $('spin').onclick=spin;
+
+  // ---------- deposit / withdraw ----------
+  var mode='dep';
+  function setMode(m){
+    mode=m;
+    $('tabDep').setAttribute('aria-selected',m==='dep');
+    $('tabWd').setAttribute('aria-selected',m==='wd');
+    $('amtLabel').textContent=m==='dep'?'Jumlah deposit (Rp)':'Jumlah withdraw (Rp)';
+    $('go').textContent=m==='dep'?'Deposit sekarang':'Withdraw sekarang';
+    $('go').className='go'+(m==='wd'?' wd':'');
+    $('err').textContent='';$('amt').value='';
+    var presets=m==='dep'?[10000,50000,100000,500000]:[MIN_WD,50000,100000,'Semua'];
+    $('chips').innerHTML='';
+    presets.forEach(function(p){
+      var b=document.createElement('button');
+      b.textContent=p==='Semua'?'Semua saldo':fmt(p);
+      b.onclick=function(){$('amt').value=p==='Semua'?state.balance:p};
+      $('chips').appendChild(b);
+    });
+  }
+  function openSheet(m){setMode(m);$('ov').classList.add('open');setTimeout(function(){$('amt').focus()},50)}
+  function closeSheet(){$('ov').classList.remove('open')}
+  $('openDep').onclick=function(){openSheet('dep')};
+  $('openWd').onclick=function(){openSheet('wd')};
+  $('tabDep').onclick=function(){setMode('dep')};
+  $('tabWd').onclick=function(){setMode('wd')};
+  $('close').onclick=closeSheet;
+  $('ov').onclick=function(e){if(e.target===$('ov'))closeSheet()};
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSheet()});
+
+  $('go').onclick=function(){
+    var v=Math.floor(Number($('amt').value));
+    var err=$('err');err.textContent='';
+    if(!v||v<=0){err.textContent='Masukkan jumlah yang valid.';return}
+    if(mode==='dep'){
+      if(v<10000){err.textContent='Deposit minimal Rp10.000.';return}
+      if(v>10000000){err.textContent='Deposit maksimal Rp10.000.000 per transaksi.';return}
+    }else{
+      if(v<MIN_WD){err.textContent='Withdraw minimal '+fmt(MIN_WD)+'.';return}
+      if(v>state.balance){err.textContent='Saldo tidak cukup. Saldo kamu '+fmt(state.balance)+'.';return}
+      if(busy){err.textContent='Tunggu putaran selesai dulu.';return}
+    }
+    var btn=$('go'),m=$('method').value,label=btn.textContent;
+    btn.disabled=true;btn.textContent='Memproses...';
+    setTimeout(function(){
+      if(mode==='dep'){
+        state.balance+=v;addHist('Deposit',v,m);toast('Deposit '+fmt(v)+' berhasil (demo)');
+      }else{
+        state.balance-=v;addHist('Withdraw',-v,m);toast('Withdraw '+fmt(v)+' berhasil (demo)');
+      }
+      btn.disabled=false;btn.textContent=label;
+      save();render();closeSheet();
+      if(!busy)$('msg').textContent='Pilih taruhan lalu tekan putar';
+    },800);
+  };
+
+  $('reset').onclick=function(){
+    if(!confirm('Hapus saldo dan riwayat demo?'))return;
+    state={balance:0,bet:5000,spins:0,wagered:0,won:0,hist:[]};
+    save();render();$('msg').textContent='Data demo direset.';
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>
